@@ -1,7 +1,7 @@
 [project]
-name = "analysis"
-version = "0.1.0"
-description = "Add your description here"
+name = "Cardiometabolic-Burden-as-Effect-Modifier"
+version = "1.0"
+description = "Do cardiometabolic factors such as hypertension, obesity, and diabetes modify the effect of socioeconomic conditions on anxiety and depressive symptoms among ever-married women in Bangladesh?"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
