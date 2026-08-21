@@ -11,7 +11,7 @@ from IPython.display import display, HTML
 recode = {
     # --- Population ---
     "V020": {
-        "name": "Type of sample / ever-married indicator",
+        "name": "Type of sample or ever-married indicator",
         "value": {1: "Ever-married", 0: "All woman"},
     },
     "S111A": {
@@ -80,15 +80,15 @@ recode = {
 
     # --- SES: Wealth ---
     "V190": {
-        "name": "Wealth index combined (categorical); identical to HV270 in RECH2.dta",
+        "name": "Wealth index combined (categorical)",
         "value": {1: "Poorest", 2: "Poorer", 3: "Middle", 4: "Richer", 5: "Richest"},
     },
     "V190A": {
-        "name": "Wealth index combined (categorical, urban/rural clustered); identical to HV270 in RECH2.dta",
+        "name": "Wealth index combined (categorical, urban/rural clustered)",
         "value": {1: "Poorest", 2: "Poorer", 3: "Middle", 4: "Richer", 5: "Richest"},
     },
-    "V191": {"name": "Wealth index factor score combined; identical to HV271 in RECH2.dta", "value": None},
-    "V191A": {"name": "Wealth index factor score combined (urban/rural clustered); identical to HV271 in RECH2.dta", "value": None},
+    "V191": {"name": "Wealth index factor score combined", "value": None},
+    "V191A": {"name": "Wealth index factor score combined (urban/rural clustered)", "value": None},
 
     # --- SES: Occupation ---
     "V714": {
@@ -275,11 +275,126 @@ recode = {
         "value": {0: "No method", 1: "Folkloric method", 2: "Traditional method", 3: "Modern method", 9: "Missing"}
     },
 
-    # --- Miscarriage/Abortion ---
+    # --- Sexual/Pregnancy ---
+    "V213": {
+        "name": "Currently pregnant",
+        "value": {0: "No or unsure", 1: "Yes", 9: "Missing"}
+    },
+    "V226": {
+        "name": "Time since last period (comp) (months)",
+        "value": {"Continuous": "0:400", 994: "In menopause", 995: "Before last pregnancy", 
+               996: "Never menstruated", 997: "Inconsistent", 998: "Don't know", 999: "Missing"}
+    },
     "V228": {
         "name": "Ever had a terminated pregnancy",
-        "value": {0: "No", 1: "Yes", 9: "Missing"},
-    }
+        "value": {0: "No", 1: "Yes", 9: "Missing"}
+    },
+    "V536": {
+        "name": "Recent sexual activity",
+        "value": {0: "Never had sex", 1: "Active in last 4 weeks", 2: "Not active in last 4 weeks - postpartum abstinence", 
+               3: "Not active in last 4 weeks - not postpartum abstinence", 9: "Missing"}
+    },
+}
+
+
+clean_recode = {
+    "Depression": {
+        "name": "PHQ-9 depression score (categorized)",
+        "value": {0: "0-4 (minimal)", 1: "5-9 (mild)", 2: "10-14 (moderate)", 3: "15-19 (moderately severe)", 
+               4: "20-27 (severe)"},
+    },
+    "Anxiety": {
+        "name": "GAD-7 anxiety score (categorized)",
+        "value": {0: "0-4 (minimal)", 1: "5-9 (mild)", 2: "10-14 (moderate)", 3: "15-21 (severe)"},
+    },
+    "Cardiometabolic Burden": {
+        "name": "Cardiometabolic Burden",
+        "value": {0: "None", 1: "One burden", 2: "Two burden", 3: "Three burden"}
+    },
+    "Socioeconomic Status": {
+        "name": "Socioeconomic Status (Wealth index combined)",
+        "value": {1: "Poorest", 2: "Poorer", 3: "Middle", 4: "Richer", 5: "Richest"},
+    },
+    "Marital status": {
+        "name": "Current marital status",
+        "value": {1: "Currently married", 2: "Currently not married (Widowed / Divorced / Seperated / Deserted)"}
+    },
+    "Education": {
+        "name": "Highest educational level",
+        "value": {0: "No education", 1: "Primary", 2: "Secondary", 3: "Higher"},
+    },
+    "Occupation": {
+        "name": "Respondent currently working",
+        "value": {0: "No", 1: "Yes"},
+    },
+    "Partner occupation": {
+        "name": "Husband/partner's occupation (grouped)",
+        "value": {0: "Not working", 1: "Working"},
+    },
+    "Age": {
+        "name": "Age in 5-year groups",
+        "value": {1: "15-24", 2: "25-34", 3: "35-49"},
+    },
+    "Division": {
+        "name": "Division",
+        "value": {1: "Barishal", 2: "Chattogram", 3: "Dhaka", 4: "Khulna", 5: "Mymensingh", 6: "Rajshahi", 7: "Rangpur", 8: "Sylhet"},
+    },
+    "Residence": {
+        "name": "Type of place of residence",
+        "value": {1: "Urban", 2: "Rural"},
+    },
+    "Religion": {
+        "name": "Religion",
+        "value": {1: "Islam", 2: "Others"},
+    },
+    "Children": {
+        "name": "Total children ever born", 
+        "value": {0: "No children", 1: 1, 2: 2, 3: 3, 4: "4 or more"}
+    },
+    "Family size": {
+        "name": "Number of household members", 
+        "value": {1: "Less than 5", 2: "5 or more"}
+    },
+    "Autonomy": {
+        "name": "Autonomy in household decisions",
+        "value": {0: "No autonomy", 1: "1 decision", 2: "2 decisions", 3: "3 decisions", 4: "4 dicisions"}
+    },
+    "Abuse": {
+        "name": "Physical/Sexual/Emotional Abuse",
+        "value": {0: "No", 1: "Yes"},
+    },
+    "Insurance": {
+        "name": "Covered by health insurance",
+        "value": {0: "No", 1: "Yes"},
+    },
+    "Internet": {
+        "name": "Use of internet",
+        "value": {0: "Never", 1: "Occasionally", 2: "Yes"},
+    },
+    "Contraceptive": {
+        "name": "Current contraceptive use by method type (simplified/collapsed version)",
+        "value": {0: "No method", 1: "Folkloric method", 2: "Traditional method", 3: "Modern method"}
+    },
+    "Abortion": {
+        "name": "Ever had a terminated pregnancy",
+        "value": {0: "No", 1: "Yes"}
+    },
+    "Pregnant": {
+        "name": "Currently pregnant",
+        "value": {0: "No or unsure", 1: "Yes"}
+    },
+    "Menopause": {
+        "name": "In menopause",
+        "value": {0: "No", 1: "Yes"}
+    },
+    "Sexual activity": {
+        "name": "Recent sexual activity",
+        "value": {0: "Not Active", 1: "Active"}
+    },
+    "Postpartum": {
+        "name": "Postpartum abstinence",
+        "value": {0: "No", 1: "Yes"}
+    },
 }
 
 
