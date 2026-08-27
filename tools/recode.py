@@ -1,6 +1,7 @@
 import html
 import json
 import uuid
+import pandas as pd
 from IPython.display import display, HTML
 
 
@@ -141,7 +142,8 @@ recode = {
     "V705": {
         "name": "Husband/partner's occupation (grouped)",
         "value": {0: "Not working", 1: "Professional/technical/managerial", 2: "Clerical", 3: "Sales", 4: "Agricultural - self employed",
-                   5: "Agricultural - employee", 6: "Household and domestic", 7: "Services", 8: "Skilled manual", 9: "Unskilled manual"},
+                   5: "Agricultural - employee", 6: "Household and domestic", 7: "Services", 8: "Skilled manual", 9: "Unskilled manual",
+                   98: "Don't know"},
     },
 
     # --- Confounders: Age ---
@@ -329,7 +331,7 @@ clean_recode = {
     },
     "Partner occupation": {
         "name": "Husband/partner's occupation (grouped)",
-        "value": {0: "Not working", 1: "Working"},
+        "value": {1: "Not working", 2: "Working", 3: "Currently not married (Widowed / Divorced / Seperated / Deserted)"},
     },
     "Age": {
         "name": "Age in 5-year groups",
@@ -525,12 +527,43 @@ domain_groups = {
 # Parse any recoded variable
 # ---------------------------------------------------------------------------
 
+def investigate_row(row: pd.Series, mapping: dict = clean_recode) -> pd.Series:
+    """
+    Recodes numeric values in a pandas DataFrame row/Series using a dictionary.
+    
+    Parameters:
+        row (pd.Series): A single row from a DataFrame.
+        mapping (dict): Lookup dictionary mapping column names to label dicts.
+        
+    Returns:
+        pd.Series: A new Series with recoded values.
+    """
+    recoded = row.astype(object).copy()
+    
+    for col in recoded.index:
+        if col in mapping:
+            val_map = mapping[col]["value"]
+            val = recoded[col]
+            
+            # Handle NaN values safely
+            if pd.notna(val):
+                # Convert float to int if needed (e.g., 2.0 -> 2) for dict lookup
+                lookup_key = int(val) if isinstance(val, float) and val.is_integer() else val
+                recoded[col] = val_map.get(lookup_key, val)
+                
+    return recoded
+
+
+# ---------------------------------------------------------------------------
+# Parse any recoded variable
+# ---------------------------------------------------------------------------
+
 def parse_recode(feature_name: str, max_height: int = 350, default_open: bool = True):
     """
     Parses a single variable recode dictionary and renders a collapsible, 
     eye-friendly HTML card in Jupyter Notebooks.
     """
-    var = recode.get(feature_name)
+    var = recode.get(feature_name, None) or clean_recode.get(feature_name, None)
     if not isinstance(var, dict):
         display(HTML("<div style='color: #a83232; padding: 8px;'>Invalid variable input (expected dict).</div>"))
         return

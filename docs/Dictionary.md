@@ -49,7 +49,7 @@ Sample is restricted to ever-married women (`V020 == 1`).
 | `MTH24` | GAD-7 anxiety score (categorized) | 0 = 0–4 minimal; 1 = 5–9 mild; 2 = 10–14 moderate; 3 = 15–21 severe |
 | `MTH10` | Trouble falling/staying asleep, last 2 weeks | 0 = Never; 1 = Rarely; 2 = Often; 3 = Always; 7 = Refused; 8 = Don't know |
 
-### A4. Socioeconomic Position — Education
+### A4. Socioeconomic Status — Education
 
 | Variable | Description | Codes |
 |---|---|---|
@@ -57,7 +57,7 @@ Sample is restricted to ever-married women (`V020 == 1`).
 | `V149` | Educational attainment | 0 = No education; 1 = Incomplete primary; 2 = Complete primary; 3 = Incomplete secondary; 4 = Complete secondary; 5 = Higher; 9 = Missing |
 | `V106` | Highest educational level | 0 = No education; 1 = Primary; 2 = Secondary; 3 = Higher |
 
-### A5. Socioeconomic Position — Wealth
+### A5. Socioeconomic Status — Wealth
 
 | Variable | Description | Codes |
 |---|---|---|
@@ -66,7 +66,7 @@ Sample is restricted to ever-married women (`V020 == 1`).
 | `V191` | Wealth index factor score combined | Continuous |
 | `V191A` | Wealth index factor score, urban/rural clustered | Continuous |
 
-### A6. Socioeconomic Position — Occupation
+### A6. Socioeconomic Status — Occupation
 
 | Variable | Description | Codes |
 |---|---|---|
@@ -175,9 +175,11 @@ Sample is restricted to ever-married women (`V020 == 1`).
 
 | Variable | Description | What it is used for |
 |---|---|---|
-| `V005` | Sampling weight | Makes estimates representative of the target population |
-| `V001` | Primary sampling unit / cluster | Accounts for clustering |
-| `V022` | Stratum | Accounts for stratified sampling |
+| `CASEID` | Case Identification | Unique ID to identify individual |
+| `V001` | Cluster number | Primary Sampling Unit (PSU) cluster identifier (Identical to `V021`) |
+| `V005` | Individual sampling weight | Makes estimates representative of the target population |
+| `V021` | Primary sampling unit | Accounts for clustering |
+| `V022` | Sample stratum | Accounts for stratified sampling |
 
 ## Part B — Final Analysis Variables
 
@@ -191,14 +193,19 @@ Each row shows the analysis-ready variable (as it appears in `clean_recode`), it
 | **Anxiety** | `MTH24` | Pass-through of GAD-7 severity band | 0 = 0–4 minimal; 1 = 5–9 mild; 2 = 10–14 moderate; 3 = 15–21 severe |
 | **Cardiometabolic Burden** | `SB267`, `SB236`, `SB240`, `WBP24`, `WBP25`, `WBP16`, `WBP19`, `HA40` | Sum of 3 binary flags: **Diabetes** (`SB267`≥126 OR `SB236`=Yes OR `SB240`=Yes), **Hypertension** (`WBP24`≥140 OR `WBP25`≥90 OR `WBP16`=Yes OR `WBP19`=Yes), **Obesity** (`HA40`≥30) | 0 = None; 1 = One burden; 2 = Two burdens; 3 = Three burdens |
 
-### Socioeconomic Position
+### Socioeconomic Status
 
 | Final variable | Source | Derivation | Final categories |
 |---|---|---|---|
 | **Socioeconomic Status** | `V190` (or `V190A`) | Pass-through of wealth quintile | 1 = Poorest; 2 = Poorer; 3 = Middle; 4 = Richer; 5 = Richest |
+
+### Socioeconomic Confounders
+
+| Final variable | Source | Derivation | Final categories |
+|---|---|---|---|
 | **Education** | `V106` | Pass-through of highest level attained | 0 = No education; 1 = Primary; 2 = Secondary; 3 = Higher |
 | **Occupation** | `V714` | Pass-through | 0 = No; 1 = Yes |
-| **Partner occupation** | `V705` | Collapsed: code 0 → "Not working"; any non-zero occupation group (codes 1–9) → "Working" | 0 = Not working; 1 = Working |
+| **Partner occupation** | `V705` | Collapsed: code 0 → "Not working"; any non-zero occupation group (codes 1–9) → "Working" | 1 = Not working; 2 = Working; 3 = Currently not married |
 
 ### Demographics / Confounders
 
