@@ -331,7 +331,7 @@ clean_recode = {
     },
     "Partner occupation": {
         "name": "Husband/partner's occupation (grouped)",
-        "value": {1: "Not working", 2: "Working", 3: "Currently not married (Widowed / Divorced / Seperated / Deserted)"},
+        "value": {1: "Not working", 2: "Working", 3: "Currently not married (Widowed / Divorced / Seperated / Deserted)", 4: "Don't know"},
     },
     "Age": {
         "name": "Age in 5-year groups",

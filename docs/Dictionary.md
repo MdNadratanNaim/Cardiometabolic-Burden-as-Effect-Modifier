@@ -205,7 +205,7 @@ Each row shows the analysis-ready variable (as it appears in `clean_recode`), it
 |---|---|---|---|
 | **Education** | `V106` | Pass-through of highest level attained | 0 = No education; 1 = Primary; 2 = Secondary; 3 = Higher |
 | **Occupation** | `V714` | Pass-through | 0 = No; 1 = Yes |
-| **Partner occupation** | `V705` | Collapsed: code 0 → "Not working"; any non-zero occupation group (codes 1–9) → "Working" | 1 = Not working; 2 = Working; 3 = Currently not married |
+| **Partner occupation** | `V705` | Collapsed: code 0 → "Not working"; any non-zero occupation group (codes 1–9) → "Working" | 1 = Not working; 2 = Working; 3 = Currently not married; 4 = Don't know |
 
 ### Demographics / Confounders
 
