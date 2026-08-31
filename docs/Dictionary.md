@@ -21,7 +21,6 @@ Sample is restricted to ever-married women (`V020 == 1`).
 
 | Variable | Description | Codes |
 |---|---|---|
-| `V020` | Type of sample / ever-married indicator | 1 = Ever-married; 0 = All women |
 | `S111A` | Current marital status | 1 = Currently married; 2 = Separated; 3 = Deserted; 4 = Divorced; 5 = Widowed |
 | `V501` | Current marital status (alt. source) | 0 = Never married; 1 = Married; 2 = Living together; 3 = Widowed; 4 = Divorced; 5 = Not living together; 9 = Missing |
 | `HV104` | Sex of household member | 1 = Male; 2 = Female; 9 = Missing |
@@ -224,7 +223,7 @@ Each row shows the analysis-ready variable (as it appears in `clean_recode`), it
 | Final variable | Source | Derivation | Final categories |
 |---|---|---|---|
 | **Autonomy** | `V743A`, `V743B`, `V743D`, `V743F` | For each item, recoded to 1 if the respondent has a say (raw codes 1–3: alone / jointly / with another person) or 0 if she does not (raw codes 4–6, 9); the four binary indicators are then summed | 0 = No autonomy; 1 = 1 decision; 2 = 2 decisions; 3 = 3 decisions; 4 = 4 decisions |
-| **Abuse** | `V744A`–`V744E` | Flagged 1 ("Yes") if the respondent endorses wife-beating as justified in at least one of the five scenarios, otherwise 0 ("No") | 0 = No; 1 = Yes |
+| **IPV Attitude** | `V744A`–`V744E` | Flagged 1 ("Yes") if the respondent endorses wife-beating as justified in at least one of the five scenarios, otherwise 0 ("No") | 0 = No; 1 = Yes |
 
 ### Health Access / Media
 

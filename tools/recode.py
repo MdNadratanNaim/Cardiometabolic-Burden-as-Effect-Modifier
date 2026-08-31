@@ -36,7 +36,7 @@ recode = {
     },
     "SB240": {
         "name": "Currently taking medication for diabetes",
-        "value": {0: "No", 1: "Yes"},
+        "value": {0: "No", 1: "Yes", 9: "Missing"},
     },
 
     # --- Cardiometabolic burden: Hypertension ---
@@ -238,7 +238,7 @@ recode = {
         "name": "Person who decides what to do with money husband earns",
         "value": {1: "Respondent alone", 2: "Respondent & husband/partner jointly",
                    3: "Respondent and other person", 4: "Husband/partner alone",
-                   5: "Someone else", 6: "Other", 9: "Missing"},
+                   5: "Someone else", 7: "Husband/partner has no earnings", 6: "Other", 9: "Missing"},
     },
 
     # --- Confounders: Attitudes toward IPV (proxy for domestic violence exposure) ---
@@ -331,7 +331,7 @@ clean_recode = {
     },
     "Partner occupation": {
         "name": "Husband/partner's occupation (grouped)",
-        "value": {1: "Not working", 2: "Working", 3: "Currently not married (Widowed / Divorced / Seperated / Deserted)", 4: "Don't know"},
+        "value": {1: "Not working", 2: "Working", 3: "Don't know"},
     },
     "Age": {
         "name": "Age in 5-year groups",
@@ -361,8 +361,8 @@ clean_recode = {
         "name": "Autonomy in household decisions",
         "value": {0: "No autonomy", 1: "1 decision", 2: "2 decisions", 3: "3 decisions", 4: "4 dicisions"}
     },
-    "Abuse": {
-        "name": "Physical/Sexual/Emotional Abuse",
+    "IPV Attitude": {
+        "name": "Justification for Physical/Sexual/Emotional Abuse",
         "value": {0: "No", 1: "Yes"},
     },
     "Insurance": {
