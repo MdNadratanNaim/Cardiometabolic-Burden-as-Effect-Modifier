@@ -9,7 +9,7 @@ This dictionary documents the full variable pipeline used in the analysis:
 - **Part C** — raw variables that are available (present in `recode`) but not mapped to any final `clean_recode` variable — kept for descriptive stats or sensitivity checks.
 - **Part D** — variables from the original BDHS codebook that are **not available** in this extract at all.
 
-Sample is restricted to ever-married women (`V020 == 1`).
+Sample is restricted to currently married women (`S111A == 1`).
 
 
 
@@ -128,9 +128,9 @@ Sample is restricted to ever-married women (`V020 == 1`).
 | `V743A` | Decides on respondent's health care | 1 = Respondent alone; 2 = Respondent & husband jointly; 3 = Respondent & other person; 4 = Husband alone; 5 = Someone else; 6 = Other; 9 = Missing |
 | `V743B` | Decides on large household purchases | Same code scheme as `V743A` |
 | `V743D` | Decides on visits to family/relatives | Same code scheme as `V743A` |
-| `V743F` | Decides what to do with money husband earns | Same code scheme as `V743A` |
+| `V743F` | Decides what to do with money husband earns | Same code scheme as `V743A`, plus 7 = Husband/partner has no earnings |
 
-`V743C` (daily-needs purchases) and `V743E` (food to cook) exist in the original codebook but are **not available** in this extract.
+`V743C` (daily-needs purchases) and `V743E` (food to cook) exist in the original codebook but are **not available** in this extract. `V743F`'s code 7 has no equivalent in `V743A`/`V743B`/`V743D` — it marks the item as not applicable rather than a lower level of autonomy (see Part B).
 
 ### A14. Confounders — Attitudes Toward Intimate Partner Violence
 
@@ -204,13 +204,14 @@ Each row shows the analysis-ready variable (as it appears in `clean_recode`), it
 |---|---|---|---|
 | **Education** | `V106` | Pass-through of highest level attained | 0 = No education; 1 = Primary; 2 = Secondary; 3 = Higher |
 | **Occupation** | `V714` | Pass-through | 0 = No; 1 = Yes |
-| **Partner occupation** | `V705` | Collapsed: code 0 → "Not working"; any non-zero occupation group (codes 1–9) → "Working" | 1 = Not working; 2 = Working; 3 = Currently not married; 4 = Don't know |
+| **Partner occupation** | `V705` | Collapsed: code 0 → "Not working"; codes 1–9 → "Working"; code 98 → "Don't know" (explicit category, not treated as missing) | 1 = Not working; 2 = Working; 3 = Don't know |
 
 ### Demographics / Confounders
 
+*A **Marital status** variable is no longer part of the analytic pipeline: the eligibility filter now restricts the sample to currently married women (`S111A == 1`) directly, so the variable would be constant (zero variance) across the analytic sample and was dropped.*
+
 | Final variable | Source | Derivation | Final categories |
 |---|---|---|---|
-| **Marital status** | `S111A` (or `V501`) | Collapsed: code 1 ("Currently married") kept as-is; all other codes (Separated/Deserted/Divorced/Widowed) collapsed together | 1 = Currently married; 2 = Currently not married |
 | **Age** | `V013` | Collapsed from 7 five-year bands to 3: {1,2} → 15–24; {3,4} → 25–34; {5,6,7} → 35–49 | 1 = 15–24; 2 = 25–34; 3 = 35–49 |
 | **Division** | `V024` | Pass-through | 1 = Barishal; 2 = Chattogram; 3 = Dhaka; 4 = Khulna; 5 = Mymensingh; 6 = Rajshahi; 7 = Rangpur; 8 = Sylhet |
 | **Residence** | `V025` | Pass-through | 1 = Urban; 2 = Rural |
@@ -222,8 +223,9 @@ Each row shows the analysis-ready variable (as it appears in `clean_recode`), it
 
 | Final variable | Source | Derivation | Final categories |
 |---|---|---|---|
-| **Autonomy** | `V743A`, `V743B`, `V743D`, `V743F` | For each item, recoded to 1 if the respondent has a say (raw codes 1–3: alone / jointly / with another person) or 0 if she does not (raw codes 4–6, 9); the four binary indicators are then summed | 0 = No autonomy; 1 = 1 decision; 2 = 2 decisions; 3 = 3 decisions; 4 = 4 decisions |
-| **IPV Attitude** | `V744A`–`V744E` | Flagged 1 ("Yes") if the respondent endorses wife-beating as justified in at least one of the five scenarios, otherwise 0 ("No") | 0 = No; 1 = Yes |
+| **Household Autonomy** | `V743A`, `V743B`, `V743D` | For each item, recoded to 1 if the respondent has a say (raw codes 1–3: alone / jointly / with another person) or 0 if she does not (raw codes 4–6, 9); the three binary indicators are then summed. `V743F` (money husband earns) is deliberately **excluded** from this composite — see *Financial Decision-Making* below and the note under Part A13 | 0 = No autonomy; 1 = 1 decision; 2 = 2 decisions; 3 = 3 decisions |
+| **Financial Decision-Making** | `V743F` | Kept as its own variable rather than merged into *Household Autonomy*, because raw code 7 ("Husband/partner has no earnings") marks the item as not applicable for ~1.3% of the sample, not a lower level of autonomy — merging it would force either an arbitrary denominator correction or an unjustified "no earnings = no autonomy" assumption. Recoded to 1 if the respondent has a say (codes 1–3), 0 if she does not (codes 4–6), 2 if there are no earnings to decide about (code 7). This mirrors DHS's own convention: the official "Participation in Decision Making" indicator and SDG Indicator 5.6.1 are both built from `V743A`/`V743B`/`V743D` only, with the money-earned item tracked as a separate empowerment dimension (DHS Guide to DHS Statistics; Kishor & Subaiya 2008, DHS Comparative Reports No. 20) | 0 = Husband/other decides; 1 = Respondent has a say; 2 = No earnings (N/A) |
+| **IPV Attitude** | `V744A`–`V744E` | Recoded to a 3-level variable rather than binary, so "don't know" (raw code 8) gets its own category instead of being silently absorbed into "does not justify": **Justifies** (2) if any item = Yes; else **Uncertain** (1) if any item = Don't know; else **Rejects** (0). Extends DHS's own "any Yes wins" convention for this item with a second tier rather than collapsing don't-know into a numeric scale position | 0 = Rejects in all scenarios; 1 = Uncertain (Don't know, never affirms); 2 = Justifies in ≥1 scenario |
 
 ### Health Access / Media
 

@@ -317,10 +317,6 @@ clean_recode = {
         "name": "Socioeconomic Status (Wealth index combined)",
         "value": {1: "Poorest", 2: "Poorer", 3: "Middle", 4: "Richer", 5: "Richest"},
     },
-    "Marital status": {
-        "name": "Current marital status",
-        "value": {1: "Currently married", 2: "Currently not married (Widowed / Divorced / Seperated / Deserted)"}
-    },
     "Education": {
         "name": "Highest educational level",
         "value": {0: "No education", 1: "Primary", 2: "Secondary", 3: "Higher"},
@@ -357,13 +353,17 @@ clean_recode = {
         "name": "Number of household members", 
         "value": {1: "Less than 5", 2: "5 or more"}
     },
-    "Autonomy": {
-        "name": "Autonomy in household decisions",
-        "value": {0: "No autonomy", 1: "1 decision", 2: "2 decisions", 3: "3 decisions", 4: "4 dicisions"}
+    "Household Autonomy": {
+        "name": "Autonomy in household decisions (health care, purchases, family visits)",
+        "value": {0: "No autonomy", 1: "1 decision", 2: "2 decisions", 3: "3 decisions"}
+    },
+    "Financial Decision-Making": {
+        "name": "Person who decides what to do with money husband earns",
+        "value": {0: "Husband/other decides", 1: "Respondent has a say", 2: "No earnings (N/A)"},
     },
     "IPV Attitude": {
         "name": "Justification for Physical/Sexual/Emotional Abuse",
-        "value": {0: "No", 1: "Yes"},
+        "value": {0: "Rejects in all scenarios", 1: "Uncertain (Don't know, never affirms)", 2: "Justifies in \u22651 scenario"},
     },
     "Insurance": {
         "name": "Covered by health insurance",
@@ -516,7 +516,8 @@ domain_groups = {
     "household_size": ["V136", "V137", "V138"],
     "health_insurance": ["V481"],
     "mass_media": ["V157", "V158", "V159", "V171A"],
-    "autonomy": ["V743A", "V743B", "V743D", "V743F"],
+    "autonomy": ["V743A", "V743B", "V743D"],
+    "financial_decision": ["V743F"],
     "ipv_attitudes": ["V744A", "V744B", "V744C", "V744D", "V744E"],
     "contraception": ["V312", "V313"],
     "pregnancy_loss": ["V228"],
