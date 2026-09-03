@@ -102,7 +102,7 @@ Sample is restricted to currently married women (`S111A == 1`).
 
 | Variable | Description | Codes |
 |---|---|---|
-| `V130` | Religion | 1 = Islam; 2 = Hindu; 3 = Christian; 4 = Other |
+| `V130` | Religion | 1 = Islam; 2 = Hindu; 3 = Buddhist; 4 = Christianity; 96 = Others |
 
 ### A11. Confounders — Children Born
 
@@ -190,7 +190,7 @@ Each row shows the analysis-ready variable (as it appears in `clean_recode`), it
 |---|---|---|---|
 | **Depression** | `MTH22` | Pass-through of PHQ-9 severity band | 0 = 0–4 minimal; 1 = 5–9 mild; 2 = 10–14 moderate; 3 = 15–19 moderately severe; 4 = 20–27 severe |
 | **Anxiety** | `MTH24` | Pass-through of GAD-7 severity band | 0 = 0–4 minimal; 1 = 5–9 mild; 2 = 10–14 moderate; 3 = 15–21 severe |
-| **Cardiometabolic Burden** | `SB267`, `SB236`, `SB240`, `WBP24`, `WBP25`, `WBP16`, `WBP19`, `HA40` | Sum of 3 binary flags: **Diabetes** (`SB267`≥126 OR `SB236`=Yes OR `SB240`=Yes), **Hypertension** (`WBP24`≥140 OR `WBP25`≥90 OR `WBP16`=Yes OR `WBP19`=Yes), **Obesity** (`HA40`≥30) | 0 = None; 1 = One burden; 2 = Two burdens; 3 = Three burdens |
+| **Cardiometabolic Burden** | `SB267`, `SB236`, `SB240`, `WBP24`, `WBP25`, `WBP16`, `WBP19`, `HA40` | Sum of 3 binary flags: **Diabetes** (`SB267`≥126 OR `SB236`=Yes OR `SB240`=Yes), **Hypertension** (`WBP24`≥140 OR `WBP25`≥90 OR `WBP16`=Yes OR `WBP19`=Yes), **Obesity** (`HA40`≥3000) | 0 = None; 1 = One burden; 2 = Two burdens; 3 = Three burdens |
 
 ### Socioeconomic Status
 
@@ -215,7 +215,7 @@ Each row shows the analysis-ready variable (as it appears in `clean_recode`), it
 | **Age** | `V013` | Collapsed from 7 five-year bands to 3: {1,2} → 15–24; {3,4} → 25–34; {5,6,7} → 35–49 | 1 = 15–24; 2 = 25–34; 3 = 35–49 |
 | **Division** | `V024` | Pass-through | 1 = Barishal; 2 = Chattogram; 3 = Dhaka; 4 = Khulna; 5 = Mymensingh; 6 = Rajshahi; 7 = Rangpur; 8 = Sylhet |
 | **Residence** | `V025` | Pass-through | 1 = Urban; 2 = Rural |
-| **Religion** | `V130` | Collapsed: code 1 ("Islam") kept as-is; codes 2–4 (Hindu/Christian/Other) collapsed together | 1 = Islam; 2 = Others |
+| **Religion** | `V130` | Collapsed: code 1 ("Islam") kept as-is; codes 2–96 (Hindu/Buddhist/Christianity/Others) collapsed together | 1 = Islam; 2 = Others |
 | **Children** | `V201` | Pass-through for values 0–3, top-coded at 4 | 0 = No children; 1; 2; 3; 4 = 4 or more |
 | **Family size** | `V136` | Collapsed at a threshold of 5 household members | 1 = Less than 5; 2 = 5 or more |
 

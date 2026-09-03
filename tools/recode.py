@@ -177,7 +177,7 @@ recode = {
     # --- Confounders: Religion ---
     "V130": {
         "name": "Religion",
-        "value": {1: "Islam", 2: "Hindu", 3: "Christian", 4: "Other"},
+        "value": {1: "Islam", 2: "Hindu", 3: "Buddhist", 4: "Christianity", 96: "Others"},
     },
 
     # --- Confounders: Children born ---
