@@ -15,3 +15,8 @@ wheels/
 
 # Dataset
 bdhs-dataset
+
+# R-generated files (renv/library/ etc. are handled by renv/.gitignore itself)
+.Rhistory
+.RData
+.Rproj.user/

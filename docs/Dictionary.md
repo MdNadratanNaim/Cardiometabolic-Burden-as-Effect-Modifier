@@ -175,7 +175,7 @@ Sample is restricted to currently married women (`S111A == 1`).
 | Variable | Description | What it is used for |
 |---|---|---|
 | `CASEID` | Case Identification | Unique ID to identify individual |
-| `V001` | Cluster number | Primary Sampling Unit (PSU) cluster identifier (Identical to `V021`) |
+| `V001` | Cluster number | Primary Sampling Unit (PSU) cluster identifier (Identical to `V021` — see Part B Survey Design; `V001` is retained here for the identity check but is not carried into the final analytic datasets) |
 | `V005` | Individual sampling weight | Makes estimates representative of the target population |
 | `V021` | Primary sampling unit | Accounts for clustering |
 | `V022` | Sample stratum | Accounts for stratified sampling |
@@ -247,19 +247,30 @@ Each row shows the analysis-ready variable (as it appears in `clean_recode`), it
 
 ---
 
-### Survery Design
+### Survey Design
+
+Four survey-design variables are carried into the final analytic datasets (`depression_dataset.csv` / `anxiety_dataset.csv`), alongside the substantive variables in the tables above:
+
+| Final variable | Source | Role |
+|---|---|---|
+| **CASEID** | `CASEID` | Unique respondent identifier (record linkage / de-duplication, not entered as a model term) |
+| **Sampling weight** | `V005` | Individual sampling weight, rescaled by dividing by 1,000,000 per DHS convention, so estimates are representative of the target population |
+| **PSU** | `V021` | Primary sampling unit; accounts for clustering in variance estimation. `V001` ("Cluster number") is identical to `V021` (verified: `(V001==V021).mean() == 1.0`) and is therefore **not** carried into the final datasets — `PSU` is the single retained cluster identifier |
+| **Stratum** | `V022` | Sample stratum; accounts for stratified sampling in variance estimation |
 
 ```markdown
-                 BDHS sampling design
-                        │
-          ┌─────────────┼─────────────┐
-          ▼             ▼             ▼
-       Weight         Cluster       Stratum
-       V005            V001          V022
-          │             │             │
-          └─────────────┼─────────────┘
-                        ▼
-              Survey-weighted regression
+                       BDHS sampling design
+                              │
+         ┌─────────────┬──────┴──────┬─────────────┐
+         ▼             ▼             ▼             ▼
+      CASEID        Weight          PSU         Stratum
+      CASEID         V005          V021          V022
+         │             │             │             │
+         └─────────────┴──────┬──────┴─────────────┘
+                               ▼
+                   Survey-weighted regression
+                (svyset: psu=PSU, strata=Stratum,
+                       weight=Sampling weight)
 ```
 
 ---
@@ -268,7 +279,10 @@ Each row shows the analysis-ready variable (as it appears in `clean_recode`), it
 
 These are present in `recode` (available in the dataset) but are not directly used to build a `clean_recode` variable — likely kept for descriptive tables, alternate specifications, or sensitivity analysis:
 
-`V020`, `HV104`, `V133`, `V149`, `V190A`, `V191`, `V191A`, `V731`, `V716`, `V717`, `V704`, `V511`, `V513`, `V212`, `V218`, `V219`, `V137`, `V138`, `V157`, `V158`, `V159`, `V312`, `MTH10`
+`V020`, `V026`, `V501`, `HV104`, `V133`, `V149`, `V190A`, `V191`, `V191A`, `V731`, `V716`, `V717`, `V704`, `V511`, `V513`, `V212`, `V218`, `V219`, `V137`, `V138`, `V157`, `V158`, `V159`, `V312`, `MTH10`
+
+- `V026` (de facto place of residence, 6-category) is superseded by the de jure `V025` (urban/rural) used for the final **Residence** variable, but is retained for a possible de facto vs. de jure sensitivity check.
+- `V501` (marital status, alternate coding) is superseded by `S111A` as the eligibility-filter variable (see Purpose, above), but is retained for cross-checking the currently-married restriction against an independent marital-status item.
 
 ---
 

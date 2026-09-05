@@ -1,0 +1,11 @@
+Package: CardiometabolicBurdenEffectModifier
+Type: Project
+Title: Cardiometabolic Burden as an Effect Modifier (R analysis)
+Description:
+    R-side dependencies for the survey-weighted regression analysis
+    (5. Main Regression Analysis (R).ipynb). Not an installable R package --
+    this file exists solely so renv can track dependencies explicitly,
+    the same way pyproject.toml's [project.dependencies] does for Python.
+Imports:
+    survey,
+    IRkernel

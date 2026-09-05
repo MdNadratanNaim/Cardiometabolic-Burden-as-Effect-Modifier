@@ -311,7 +311,7 @@ clean_recode = {
     },
     "Cardiometabolic Burden": {
         "name": "Cardiometabolic Burden",
-        "value": {0: "None", 1: "One burden", 2: "Two burden", 3: "Three burden"}
+        "value": {0: "None", 1: "One burden", 2: "Two burdens", 3: "Three burdens"}
     },
     "Socioeconomic Status": {
         "name": "Socioeconomic Status (Wealth index combined)",
