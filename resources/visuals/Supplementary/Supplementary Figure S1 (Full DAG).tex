@@ -1,10 +1,19 @@
 % This code uses the tikz package
 % Full theoretical DAG underlying confounder selection for the Wealth -> Burden -> MentalHealth
-% model (see Notebook 4, "12-covariate DAG-based adjustment set"). MaritalStatus (v7) is retained
-% here for theoretical completeness, but is marked below as held constant by design rather than
-% statistically adjusted: the eligibility filter restricts the analytic sample to currently married
-% women (S111A == 1), so the variable has zero variance in the analysis data and is not, and cannot
-% be, entered as a model covariate.
+% model (see Notebook 4, "11-covariate DAG-based adjustment set"). Three nodes are marked as special
+% cases rather than plain adjustment covariates:
+%   * MaritalStatus (v7) -- held constant by design: the eligibility filter restricts the analytic
+%     sample to currently married women (S111A == 1), so the variable has zero variance in the
+%     analysis data and cannot be entered as a model covariate.
+%  ** Insurance (v15) -- theoretically a valid confounder (edges below reflect that), but excluded
+%     from the fitted models in practice: complete separation (0 of 16 insured women screen positive
+%     for either outcome) makes its coefficient a data artifact, not a real estimate.
+% *** FinancialDecisionMaking (v22) -- ambiguous causal role. Plausibly a Wealth parent alongside
+%     Autonomy (a legitimate confounder), but plausibly downstream of Wealth instead (a mediator),
+%     which would make adjusting for it a mediator-adjustment bias risk rather than a fix. The
+%     dashed, undirected edge to Wealth reflects that ambiguity rather than asserting a direction.
+%     Tested as a sensitivity addition (with IPVattitudes) in the regression notebook rather than
+%     included in, or resolved by, the primary adjustment set.
 \begin{tikzpicture}
 \node (v0) at (-0.915,-2.09) {Wealth};
 \node (v1) at (-1.06,-4.23) {Burden};
@@ -21,13 +30,14 @@
 \node (v12) at (0.983,4.70) {HouseholdSize};
 \node (v13) at (2.36,4.77) {Autonomy};
 \node (v14) at (5.10,2.62) {IPVattitudes};
-\node (v15) at (5.02,-0.343) {Insurance};
+\node (v15) [dashed, draw, gray, rounded corners] at (5.02,-0.343) {Insurance**};
 \node (v16) at (4.28,-3.81) {InternetUse};
 \node (v17) at (4.78,4.52) {Pregnancy};
 \node (v18) at (4.82,-2.71) {Postpartum};
 \node (v19) at (0.875,-4.20) {SexualActivity};
 \node (v20) at (4.82,0.969) {ContraceptiveUse};
 \node (v21) at (3.16,-4.43) {AbortionHistory};
+\node (v22) [dashed, draw, orange, rounded corners] at (9.0,-1.5) {FinancialDecisionMaking***};
 \draw [->] (v6) edge (v3);
 \draw [->] (v6) edge (v0);
 \draw [->] (v6) edge (v1);
@@ -85,8 +95,14 @@
 \draw [->] (v21) edge (v2);
 \draw [->] (v1) edge (v19);
 \draw [->] (v2) edge (v19);
-\node[font=\scriptsize\itshape, text width=9cm, align=center] at (0.5,-6.0)
+\draw [<->, dashed, gray] (v22) edge (v0);
+\draw [->] (v22) edge (v2);
+\node[font=\scriptsize\itshape, text width=11cm, align=center] at (1.5,-6.5)
   {* Controlled by design, not by adjustment: sample eligibility is restricted to currently
   married women, so MaritalStatus is constant in the analytic data and is excluded from all
-  fitted models.};
+  fitted models. \\{}
+  ** Complete separation (0 of 16 insured women screen positive for either outcome) excludes this
+  from the fitted models despite a theoretically valid confounder role. \\{}
+  *** Direction of the Wealth edge is unresolved (confounder vs.\ mediator); excluded from the
+  primary adjustment set and tested as a sensitivity addition instead.};
 \end{tikzpicture}

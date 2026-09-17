@@ -9,7 +9,7 @@ This dictionary documents the full variable pipeline used in the analysis:
 - **Part C** — raw variables that are available (present in `recode`) but not mapped to any final `clean_recode` variable — kept for descriptive stats or sensitivity checks.
 - **Part D** — variables from the original BDHS codebook that are **not available** in this extract at all.
 
-Sample is restricted to currently married women (`S111A == 1`).
+Sample is restricted to currently married women (`S111A == 1`). BDHS's women's questionnaire frame is ever-married women by design; this is a further, deliberate restriction — several derived variables below (Partner occupation, Household Autonomy, IPV Attitude, Financial Decision-Making) require a co-resident husband to be defined, and aren't meaningful for widowed, divorced, or separated women. See `README.md` and `4. Exploratory Data Analysis.ipynb` for the full eligibility cascade.
 
 
 
@@ -39,6 +39,8 @@ Sample is restricted to currently married women (`S111A == 1`).
 | `HA40` | Body Mass Index (BMI) | Continuous |
 
 *Note: the original codebook also lists `V445` as an alternate BMI source, but it was dropped in favor of `HA40` — obesity is computed from `HA40` only.*
+
+*Note: dyslipidemia is not part of this burden score. BDHS's biomarker module collects anthropometry, blood pressure, and blood glucose (all listed above) but no lipid panel — a lipid panel needs venous blood and lab processing that the standard DHS biomarker round doesn't do. This is a data-availability constraint, not a scope choice: dyslipidemia was never an available component to include.*
 
 ### A3. Depression / Anxiety / Sleep
 
@@ -224,14 +226,14 @@ Each row shows the analysis-ready variable (as it appears in `clean_recode`), it
 | Final variable | Source | Derivation | Final categories |
 |---|---|---|---|
 | **Household Autonomy** | `V743A`, `V743B`, `V743D` | For each item, recoded to 1 if the respondent has a say (raw codes 1–3: alone / jointly / with another person) or 0 if she does not (raw codes 4–6, 9); the three binary indicators are then summed. `V743F` (money husband earns) is deliberately **excluded** from this composite — see *Financial Decision-Making* below and the note under Part A13 | 0 = No autonomy; 1 = 1 decision; 2 = 2 decisions; 3 = 3 decisions |
-| **Financial Decision-Making** | `V743F` | Kept as its own variable rather than merged into *Household Autonomy*, because raw code 7 ("Husband/partner has no earnings") marks the item as not applicable for ~1.3% of the sample, not a lower level of autonomy — merging it would force either an arbitrary denominator correction or an unjustified "no earnings = no autonomy" assumption. Recoded to 1 if the respondent has a say (codes 1–3), 0 if she does not (codes 4–6), 2 if there are no earnings to decide about (code 7). This mirrors DHS's own convention: the official "Participation in Decision Making" indicator and SDG Indicator 5.6.1 are both built from `V743A`/`V743B`/`V743D` only, with the money-earned item tracked as a separate empowerment dimension (DHS Guide to DHS Statistics; Kishor & Subaiya 2008, DHS Comparative Reports No. 20) | 0 = Husband/other decides; 1 = Respondent has a say; 2 = No earnings (N/A) |
-| **IPV Attitude** | `V744A`–`V744E` | Recoded to a 3-level variable rather than binary, so "don't know" (raw code 8) gets its own category instead of being silently absorbed into "does not justify": **Justifies** (2) if any item = Yes; else **Uncertain** (1) if any item = Don't know; else **Rejects** (0). Extends DHS's own "any Yes wins" convention for this item with a second tier rather than collapsing don't-know into a numeric scale position | 0 = Rejects in all scenarios; 1 = Uncertain (Don't know, never affirms); 2 = Justifies in ≥1 scenario |
+| **Financial Decision-Making** | `V743F` | Kept as its own variable rather than merged into *Household Autonomy*, because raw code 7 ("Husband/partner has no earnings") marks the item as not applicable for ~1.3% of the sample, not a lower level of autonomy — merging it would force either an arbitrary denominator correction or an unjustified "no earnings = no autonomy" assumption. Recoded to 1 if the respondent has a say (codes 1–3), 0 if she does not (codes 4–6), 2 if there are no earnings to decide about (code 7). This mirrors DHS's own convention: the official "Participation in Decision Making" indicator and SDG Indicator 5.6.1 are both built from `V743A`/`V743B`/`V743D` only, with the money-earned item tracked as a separate empowerment dimension (DHS Guide to DHS Statistics; Kishor & Subaiya 2008, DHS Comparative Reports No. 20). Ambiguous causal role relative to Wealth (plausible confounder or plausible mediator — see `Supplementary Figure S1`) keeps it out of the primary adjustment set; tested together with IPV Attitude as a sensitivity addition in `5. Main Regression Analysis.ipynb`, Section 22, where neither changes the interaction finding | 0 = Husband/other decides; 1 = Respondent has a say; 2 = No earnings (N/A) |
+| **IPV Attitude** | `V744A`–`V744E` | Recoded to a 3-level variable rather than binary, so "don't know" (raw code 8) gets its own category instead of being silently absorbed into "does not justify": **Justifies** (2) if any item = Yes; else **Uncertain** (1) if any item = Don't know; else **Rejects** (0). Extends DHS's own "any Yes wins" convention for this item with a second tier rather than collapsing don't-know into a numeric scale position. Not in the primary adjustment set — it's a DAG cause of Education and Mental Health but not of Wealth, so conditioning on Education (already in the model) already blocks its one backdoor path; tested alongside Financial Decision-Making as a sensitivity addition regardless (Section 22 above) | 0 = Rejects in all scenarios; 1 = Uncertain (Don't know, never affirms); 2 = Justifies in ≥1 scenario |
 
 ### Health Access / Media
 
 | Final variable | Source | Derivation | Final categories |
 |---|---|---|---|
-| **Insurance** | `V481` | Pass-through | 0 = No; 1 = Yes |
+| **Insurance** | `V481` | Pass-through. Present in the analysis data but excluded from the regression adjustment set: complete separation (0 of 16 insured women screen positive for either outcome) makes its coefficient a data artifact rather than a real estimate — see `5. Main Regression Analysis.ipynb`, Section 5 | 0 = No; 1 = Yes |
 | **Internet** | `V171A` | Code 0 ("Never") → 0; codes 2–3 ("used before last 12 months" / "timing unclear") → 1 ("Occasionally"); code 1 ("used in last 12 months") → 2 ("Yes") | 0 = Never; 1 = Occasionally; 2 = Yes |
 
 ### Reproductive Health

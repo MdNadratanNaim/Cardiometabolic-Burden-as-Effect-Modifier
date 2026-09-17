@@ -48,18 +48,13 @@ end-to-end execution of Notebooks 2–4 (zero errors).
 
 ---
 
-## Still open (not addressed in this pass — flagged, not fixed)
+## Still open (not addressed — flagged, not fixed)
 
-- Finding A in Notebook 4's summary ("Documentation note only — confirm §2.7 covers this")
-  references a section number that doesn't exist in this notebook. Left as-is since it may refer
-  to a manuscript section outside this repo — worth confirming with whoever is drafting Methods.
-- Sentinel-code exclusion (`SB267` 994/996, `HA40` 9999) was fixed in Notebook 2 in the prior
-  round; re-verified here via full re-execution but not re-audited against the official BDHS 2022
+- Sentinel-code exclusion (`SB267` 994/996, `HA40` 9999) was fixed in Notebook 2 in an earlier
+  round; re-verified via full re-execution but not re-audited against the official BDHS 2022
   biomarker codebook for `SB267` specifically (it's a country-specific extended-module variable,
   not in the standard cross-country DHS recode manual). Worth a final manual check before
-  submission.
-- `Wealth=Poorest × Burden=3` thin interaction cell (Notebook 4, Finding D) — still open, DAG
-  decision on `Financial Decision-Making`'s place in the adjustment set — still open.
+  submission — this needs the official codebook, not something resolvable from within this repo.
 
 ---
 
@@ -93,3 +88,63 @@ after the fix: Depression shows a significant collapsed-Burden interaction (R: p
 p = 0.017) but not a linear one (R: p = 0.292; Python: p = 0.182); Anxiety shows no interaction
 in either coding. R's p-values are consistently a bit higher/more conservative than Python's,
 consistent with properly incorporating stratification rather than clustering alone.
+
+`Insurance`'s complete separation, flagged above as "not yet resolved," **is now resolved** —
+see the session below.
+
+---
+
+## ✅ Resolved (this session)
+
+A follow-up review (`BDHS_Review_Resolutions_and_Methods_Outline.md`) turned the R-integration
+cross-check's open items into a concrete list. All of it is now implemented, executed, and
+verified in both `5. Main Regression Analysis.ipynb` and `5. Main Regression Analysis (R).ipynb`,
+plus a lighter pass over `4. Exploratory Data Analysis.ipynb`.
+
+**Adjustment-set changes:**
+- `Insurance` dropped from the primary covariate set entirely (11 covariates, not 12) — complete
+  separation on both outcomes, confirmed harmless to drop (LR-test p-values move by ~0.01-0.02).
+- `Partner occupation = Don't know` (depression) and `Wealth=Poorest x Burden_collapsed=2+`
+  (anxiety, newly identified) are reported as "not estimable" rather than the spurious OR = 0.000
+  complete separation produces, in both notebooks.
+- `Financial Decision-Making` and `IPV Attitude` tested together as a 13-covariate sensitivity
+  model (both notebooks, "extended covariate set" section) rather than left open — neither the
+  interaction finding nor the EPV picture changes meaningfully, so both stay out of the primary
+  11-covariate set per the DAG reasoning in Notebook 4 Section 5.1.
+
+**New diagnostics added (Python notebook primarily; ported to R where it's a design-based
+question rather than a Python-tooling gap):** goodness-of-fit (exploratory weighted
+Hosmer-Lemeshow in Python; `estat gof` added to the Stata replication block as the validated
+version), linearity of the Burden term, events-per-variable disclosure, multiple-testing
+correction (two framings — pre-specified-primary-only vs. all four tests run), E-values for the
+headline estimates, an outcome-cutoff sensitivity check (PHQ-9 >= 15), a sampling-weight range
+check, and Cook's-distance influence diagnostics.
+
+**Figures:** `Figure-1` updated to "n = 11 covariates". `Supplementary Figure S1 (Full DAG).tex`
+— `Insurance` now styled dashed/grey like `MaritalStatus`, with its own footnote; a new
+`FinancialDecisionMaking` node added with a dashed, undirected edge to `Wealth` (direction
+deliberately unasserted — that's the ambiguity in question) and a solid edge to `MentalHealth`.
+`Supplementary Figure S2 (Half DAG).svg` — `Financial decisions` added to the reproductive-health
+taxonomy, styled as "Exclude from primary model" with an "Ambiguous — excluded" sub-label (neither
+"Collider" nor "Mediator" cleanly applies, so it gets its own reason rather than being forced into
+an existing bucket).
+
+**A second, independent review** of the same repo raised five more points, checked against the
+actual code rather than taken at face value:
+- *"Ever-married vs. currently-married population"* — not a real inconsistency. BDHS's frame is
+  ever-married by design (30,078); Notebook 2 has a deliberate, explicit "Selection of currently
+  married Women" step narrowing to 28,537, load-bearing for several covariates (Partner
+  occupation, Household Autonomy, IPV Attitude all require a co-resident husband). `README.md`
+  already documented this correctly; `Dictionary.md` and Notebook 4 now state it explicitly too.
+- *"Dyslipidemia missing from the burden score"* — confirmed via `tools/recode.py` (which maps
+  every BDHS variable touched anywhere in the pipeline) that no lipid/cholesterol variable exists
+  anywhere in the extract. BDHS's biomarker module doesn't collect a lipid panel. Documented in
+  `Dictionary.md` Part A2 so this doesn't get re-flagged.
+- Weighted prevalence with a design-aware CI, an eligible-vs-analytic-sample representativeness
+  comparison (wealth/age/division), and a note on the ordinal-outcome-model extension were added
+  to Notebook 4 as reasonable EDA completeness suggestions.
+- Everything else in that review (R-as-authoritative, omnibus-test-before-simple-slopes, the
+  Model 1c nesting fix, sparse-cell handling, bootstrap-as-cross-check-not-primary) matched what
+  this session already implements.
+
+---

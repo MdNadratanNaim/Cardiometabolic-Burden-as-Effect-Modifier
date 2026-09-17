@@ -25,7 +25,9 @@ parallel survey-weighted logistic regression models.
 │   └── recode.py                          # Variable metadata (recode, clean_recode) + helpers
 ├── docs/
 │   ├── Dictionary.md                      # Full raw-to-final variable dictionary
-│   └── to_fix.md                          # Running audit trail of issues found/resolved
+│   ├── to_fix.md                          # Running audit trail of issues found/resolved
+│   ├── analysis-notes.md                  # Resolution log + manuscript Methods-section outline
+│   └── BDHS_Review_Resolutions_and_Methods_Outline.md  # External review this pass responds to
 ├── resources/
 │   ├── full_dataset.csv                   # Raw merged sample (all interviewed women)
 │   ├── depression_dataset.csv             # Final analytic sample, depression outcome
@@ -100,10 +102,15 @@ lockfile, exactly like `uv add packagename`.
 - `docs/Dictionary.md` — every raw BDHS variable, its final analysis-ready form, and the exact
   derivation logic, cross-referenced against `tools/recode.py`.
 - `docs/to_fix.md` — running audit trail of issues found and resolved across review sessions.
+- `docs/analysis-notes.md` — why the adjustment set and Burden coding look the way they do, a
+  full resolution log for every diagnostic added, and a ready-to-adapt Methods-section outline
+  with the exact numbers to cite.
+- `docs/BDHS_Review_Resolutions_and_Methods_Outline.md` — the external review document that
+  `docs/analysis-notes.md` Section 3's resolution log responds to, point by point.
 - `resources/visuals/Main/Figure-1 (Conceptual DAG).svg` — the simplified exposure/modifier/
   outcome DAG used in the main text.
 - `resources/visuals/Supplementary/Supplementary Figure S1 (Full DAG).tex` — the full theoretical
-  DAG underlying confounder selection for the 12-covariate GVIF-validated adjustment set.
+  DAG underlying confounder selection for the 11-covariate GVIF-validated adjustment set.
 - `resources/visuals/Supplementary/Supplementary Figure S2 (Half DAG).svg` — inclusion/exclusion
   reasoning for the reproductive-health covariates (mediator/collider/proxy-confounder calls).
 
@@ -131,17 +138,35 @@ itself as *"not fully supported"* when combined with weights, and has no way to 
 stratification at all. R's `svydesign(id=~PSU, strata=~Stratum, weights=~Sampling.weight,
 nest=TRUE)` does both correctly. Cross-checking the two languages against each other on this
 project already caught two real issues once (see `docs/to_fix.md`): an invalid non-nested model
-comparison that `statsmodels` didn't flag but R's `anova.svyglm` refused to run, and a
-completely-separated covariate category (`Insurance = Yes`, 0 events in both outcomes) that
-needed a systematic check to surface.
+comparison that `statsmodels` didn't flag but R's `anova.svyglm` refused to run (fixed with a
+correctly-nested comparator, "Model 1c," in both notebooks), and a completely-separated covariate
+category (`Insurance = Yes`, 0 events in both outcomes) that needed a systematic check to surface
+— now dropped from the primary adjustment set (11 covariates, not 12) in both notebooks.
 
 ## Status
 
 Data creation, feature engineering, exploratory analysis, and the main survey-weighted logistic
 regression (wealth × cardiometabolic burden interaction, both Python and R versions) are
-complete. Two known open items before manuscript-ready numbers: the `Insurance` separation issue
-above, and confirming the PHQ-9/GAD-7 ≥10 binarization cutoff is the intended one (see
-`5. Main Regression Analysis.ipynb`, Section 2).
+complete, including a full diagnostic pass: goodness-of-fit, linearity of the Burden term,
+events-per-variable disclosure, multiple-testing correction, E-values, an outcome-cutoff
+sensitivity check (PHQ-9 ≥15 vs. the primary ≥10), a sampling-weight range check, and
+influence diagnostics. `Insurance` is out of the primary adjustment set (complete separation);
+`Financial Decision-Making` and `IPV Attitude` are tested together as a 13-covariate sensitivity
+addition rather than included in, or left open in, the primary 11-covariate set — see
+`docs/to_fix.md` for the full resolution log and `docs/methods-outline.md` for the Methods-section
+writeup these decisions feed into.
+
+**Headline finding:** no significant linear Wealth × Burden interaction for either outcome.
+Depression's *collapsed*-Burden interaction (0/1/2+ conditions) is nominally significant
+(R: p = 0.028) but doesn't survive correction for the four sensitivity/primary tests run together
+(≈0.11-0.13 depending on method) — reportable as suggestive, not confirmed. Anxiety shows no
+interaction under any Burden coding or covariate set. See the Interpretation section of either
+Notebook 5 variant for the full reasoning chain.
+
+No blocking open items remain for manuscript-ready numbers from this repository's own analysis.
+One external check is still needed: re-auditing `SB267`'s sentinel-code exclusion against the
+official BDHS 2022 biomarker codebook (a country-specific extended-module variable not in the
+standard cross-country DHS recode manual) — see `docs/to_fix.md`, "Still open."
 
 ## Requirements
 
