@@ -313,6 +313,26 @@ clean_recode = {
         "name": "Cardiometabolic Burden",
         "value": {0: "None", 1: "One burden", 2: "Two burdens", 3: "Three burdens"}
     },
+    "Cardiometabolic Burden Merged": {
+        "name": "Cardiometabolic Burden",
+        "value": {0: "None", 1: "One burden", 2: "Two or more burdens"}
+    },
+    "Cardiometabolic Burden Binary": {
+        "name": "Cardiometabolic Burden",
+        "value": {0: "No", 1: "Yes"}
+    },
+    "Diabetes": {
+        "name": "Has Diabetes",
+        "value": {0: "No", 1: "Yes"}
+    },
+    "Hypertension": {
+        "name": "Has Hypertension",
+        "value": {0: "No", 1: "Yes"}
+    },
+    "Obesity": {
+        "name": "Has Obesity",
+        "value": {0: "No", 1: "Yes"}
+    },
     "Socioeconomic Status": {
         "name": "Socioeconomic Status (Wealth index combined)",
         "value": {1: "Poorest", 2: "Poorer", 3: "Middle", 4: "Richer", 5: "Richest"},
@@ -332,6 +352,10 @@ clean_recode = {
     "Age": {
         "name": "Age in 5-year groups",
         "value": {1: "15-24", 2: "25-34", 3: "35-49"},
+    },
+    "Age at first cohabitation": {
+        "name": "Age in 5-year groups",
+        "value": {0: "<15", 1: "15-24", 2: "25-34", 3: "35-49"},
     },
     "Division": {
         "name": "Division",
@@ -369,9 +393,9 @@ clean_recode = {
         "name": "Covered by health insurance",
         "value": {0: "No", 1: "Yes"},
     },
-    "Internet": {
-        "name": "Use of internet",
-        "value": {0: "Never", 1: "Occasionally", 2: "Yes"},
+    "Mass Media": {
+        "name": "Use of mass media",
+        "value": {0: "Never", 1: "Only television", 2: "Only internet", 3: "Both television and internet"},
     },
     "Contraceptive": {
         "name": "Current contraceptive use by method type (simplified/collapsed version)",
