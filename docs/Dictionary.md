@@ -191,8 +191,15 @@ Each row shows the analysis-ready variable (as it appears in `clean_recode`), it
 | Final variable | Source | Derivation | Final categories |
 |---|---|---|---|
 | **Depression** | `MTH22` | Pass-through of PHQ-9 severity band | 0 = 0–4 minimal; 1 = 5–9 mild; 2 = 10–14 moderate; 3 = 15–19 moderately severe; 4 = 20–27 severe |
+| **Depression Binary** | `Depression` | Recoded: bands 0–1 (score <10) → 0; bands 2–4 (score ≥10) → 1, the standard PHQ-9 probable-case cutoff | 0 = No (score <10); 1 = Yes (score ≥10) |
 | **Anxiety** | `MTH24` | Pass-through of GAD-7 severity band | 0 = 0–4 minimal; 1 = 5–9 mild; 2 = 10–14 moderate; 3 = 15–21 severe |
-| **Cardiometabolic Burden** | `SB267`, `SB236`, `SB240`, `WBP24`, `WBP25`, `WBP16`, `WBP19`, `HA40` | Sum of 3 binary flags: **Diabetes** (`SB267`≥126 OR `SB236`=Yes OR `SB240`=Yes), **Hypertension** (`WBP24`≥140 OR `WBP25`≥90 OR `WBP16`=Yes OR `WBP19`=Yes), **Obesity** (`HA40`≥3000) | 0 = None; 1 = One burden; 2 = Two burdens; 3 = Three burdens |
+| **Anxiety Binary** | `Anxiety` | Recoded: bands 0–1 (score <10) → 0; bands 2–3 (score ≥10) → 1, the standard GAD-7 probable-case cutoff | 0 = No (score <10); 1 = Yes (score ≥10) |
+| **Diabetes** | `SB267`, `SB236`, `SB240` | Flag = 1 if `SB267`≥126 OR `SB236`=Yes OR `SB240`=Yes; retained as its own column alongside the composite below | 0 = No; 1 = Yes |
+| **Hypertension** | `WBP24`, `WBP25`, `WBP16`, `WBP19` | Flag = 1 if `WBP24`≥140 OR `WBP25`≥90 OR `WBP16`=Yes OR `WBP19`=Yes; retained as its own column alongside the composite below | 0 = No; 1 = Yes |
+| **Obesity** | `HA40` | Flag = 1 if `HA40`≥3000; retained as its own column alongside the composite below | 0 = No; 1 = Yes |
+| **Cardiometabolic Burden** | `Diabetes`, `Hypertension`, `Obesity` | Sum of the three binary flags above | 0 = None; 1 = One burden; 2 = Two burdens; 3 = Three burdens |
+| **Cardiometabolic Burden Merged** | `Cardiometabolic Burden` | Collapsed: 0 and 1 kept as-is; 2 and 3 combined into a single "two or more" category, to thicken the top cell | 0 = None; 1 = One burden; 2 = Two or more burdens |
+| **Cardiometabolic Burden Binary** | `Cardiometabolic Burden Merged` | Collapsed further: 0 → 0; 1 or 2 → 1 | 0 = No burden; 1 = Any burden |
 
 ### Socioeconomic Status
 
@@ -220,21 +227,22 @@ Each row shows the analysis-ready variable (as it appears in `clean_recode`), it
 | **Religion** | `V130` | Collapsed: code 1 ("Islam") kept as-is; codes 2–96 (Hindu/Buddhist/Christianity/Others) collapsed together | 1 = Islam; 2 = Others |
 | **Children** | `V201` | Pass-through for values 0–3, top-coded at 4 | 0 = No children; 1; 2; 3; 4 = 4 or more |
 | **Family size** | `V136` | Collapsed at a threshold of 5 household members | 1 = Less than 5; 2 = 5 or more |
+| **Age at first cohabitation** | `V511` | Collapsed from single years into 4 bands | 0 = <15; 1 = 15–24; 2 = 25–34; 3 = 35–49 |
 
 ### Household Autonomy & Attitudes
 
 | Final variable | Source | Derivation | Final categories |
 |---|---|---|---|
 | **Household Autonomy** | `V743A`, `V743B`, `V743D` | For each item, recoded to 1 if the respondent has a say (raw codes 1–3: alone / jointly / with another person) or 0 if she does not (raw codes 4–6, 9); the three binary indicators are then summed. `V743F` (money husband earns) is deliberately **excluded** from this composite — see *Financial Decision-Making* below and the note under Part A13 | 0 = No autonomy; 1 = 1 decision; 2 = 2 decisions; 3 = 3 decisions |
-| **Financial Decision-Making** | `V743F` | Kept as its own variable rather than merged into *Household Autonomy*, because raw code 7 ("Husband/partner has no earnings") marks the item as not applicable for ~1.3% of the sample, not a lower level of autonomy — merging it would force either an arbitrary denominator correction or an unjustified "no earnings = no autonomy" assumption. Recoded to 1 if the respondent has a say (codes 1–3), 0 if she does not (codes 4–6), 2 if there are no earnings to decide about (code 7). This mirrors DHS's own convention: the official "Participation in Decision Making" indicator and SDG Indicator 5.6.1 are both built from `V743A`/`V743B`/`V743D` only, with the money-earned item tracked as a separate empowerment dimension (DHS Guide to DHS Statistics; Kishor & Subaiya 2008, DHS Comparative Reports No. 20). Ambiguous causal role relative to Wealth (plausible confounder or plausible mediator — see `Supplementary Figure S1`) keeps it out of the primary adjustment set; tested together with IPV Attitude as a sensitivity addition in `5. Main Regression Analysis.ipynb`, Section 22, where neither changes the interaction finding | 0 = Husband/other decides; 1 = Respondent has a say; 2 = No earnings (N/A) |
+| **Financial Decision-Making** | `V743F` | Kept as its own variable rather than merged into *Household Autonomy*, because raw code 7 ("Husband/partner has no earnings") marks the item as not applicable for ~1.3% of the sample, not a lower level of autonomy — merging it would force either an arbitrary denominator correction or an unjustified "no earnings = no autonomy" assumption. Recoded to 1 if the respondent has a say (codes 1–3), 0 if she does not (codes 4–6), 2 if there are no earnings to decide about (code 7). This mirrors DHS's own convention: the official "Participation in Decision Making" indicator and SDG Indicator 5.6.1 are both built from `V743A`/`V743B`/`V743D` only, with the money-earned item tracked as a separate empowerment dimension (DHS Guide to DHS Statistics; Kishor & Subaiya 2008, DHS Comparative Reports No. 20). Ambiguous causal role relative to Wealth (plausible confounder or plausible mediator — see `Supplementary Figure S1`) keeps it out of the primary adjustment set; tested together with IPV Attitude as a sensitivity addition in `6. Main Regression Analysis.ipynb`, Section 22, where neither changes the interaction finding | 0 = Husband/other decides; 1 = Respondent has a say; 2 = No earnings (N/A) |
 | **IPV Attitude** | `V744A`–`V744E` | Recoded to a 3-level variable rather than binary, so "don't know" (raw code 8) gets its own category instead of being silently absorbed into "does not justify": **Justifies** (2) if any item = Yes; else **Uncertain** (1) if any item = Don't know; else **Rejects** (0). Extends DHS's own "any Yes wins" convention for this item with a second tier rather than collapsing don't-know into a numeric scale position. Not in the primary adjustment set — it's a DAG cause of Education and Mental Health but not of Wealth, so conditioning on Education (already in the model) already blocks its one backdoor path; tested alongside Financial Decision-Making as a sensitivity addition regardless (Section 22 above) | 0 = Rejects in all scenarios; 1 = Uncertain (Don't know, never affirms); 2 = Justifies in ≥1 scenario |
 
 ### Health Access / Media
 
 | Final variable | Source | Derivation | Final categories |
 |---|---|---|---|
-| **Insurance** | `V481` | Pass-through. Present in the analysis data but excluded from the regression adjustment set: complete separation (0 of 16 insured women screen positive for either outcome) makes its coefficient a data artifact rather than a real estimate — see `5. Main Regression Analysis.ipynb`, Section 5 | 0 = No; 1 = Yes |
-| **Internet** | `V171A` | Code 0 ("Never") → 0; codes 2–3 ("used before last 12 months" / "timing unclear") → 1 ("Occasionally"); code 1 ("used in last 12 months") → 2 ("Yes") | 0 = Never; 1 = Occasionally; 2 = Yes |
+| **Insurance** | `V481` | Pass-through. Present in the analysis data but excluded from the regression adjustment set: complete separation (0 of 16 insured women screen positive for either outcome) makes its coefficient a data artifact rather than a real estimate — see `6. Main Regression Analysis.ipynb`, Section 5 | 0 = No; 1 = Yes |
+| **Mass Media** | `V171A`, `V159` | Combines internet use (`V171A`) and TV-watching frequency (`V159`): both 0 ("never") → 0; `V159` ∈ {1,2,3} (watches TV) and `V171A` = 0 → 1; `V171A` ∈ {1,2,3} (has used internet) and `V159` = 0 → 2; both non-zero → 3. Replaces the earlier internet-only variable | 0 = Neither; 1 = Television only; 2 = Internet only; 3 = Both television and internet |
 
 ### Reproductive Health
 
@@ -251,7 +259,7 @@ Each row shows the analysis-ready variable (as it appears in `clean_recode`), it
 
 ### Survey Design
 
-Four survey-design variables are carried into the final analytic datasets (`depression_dataset.csv` / `anxiety_dataset.csv`), alongside the substantive variables in the tables above:
+Four survey-design variables are carried into the final analytic dataset (`depression-anxiety-dataset.csv`), alongside the substantive variables in the tables above. This single file replaced the earlier `depression_dataset.csv` / `anxiety_dataset.csv` pair — Depression and Anxiety (and their binary versions) are now columns of the same file, since both outcomes are measured on the same women:
 
 | Final variable | Source | Role |
 |---|---|---|
@@ -281,7 +289,9 @@ Four survey-design variables are carried into the final analytic datasets (`depr
 
 These are present in `recode` (available in the dataset) but are not directly used to build a `clean_recode` variable — likely kept for descriptive tables, alternate specifications, or sensitivity analysis:
 
-`V020`, `V026`, `V501`, `HV104`, `V133`, `V149`, `V190A`, `V191`, `V191A`, `V731`, `V716`, `V717`, `V704`, `V511`, `V513`, `V212`, `V218`, `V219`, `V137`, `V138`, `V157`, `V158`, `V159`, `V312`, `MTH10`
+`V020`, `V026`, `V501`, `HV104`, `V133`, `V149`, `V190A`, `V191`, `V191A`, `V731`, `V716`, `V717`, `V704`, `V513`, `V212`, `V218`, `V219`, `V137`, `V138`, `V157`, `V158`, `V312`, `MTH10`
+
+*`V511` (age at first cohabitation) and `V159` (TV-watching frequency) were moved out of this list into Part B: `V511` now maps to **Age at first cohabitation**, and `V159` is now a joint source (with `V171A`) for **Mass Media**.*
 
 - `V026` (de facto place of residence, 6-category) is superseded by the de jure `V025` (urban/rural) used for the final **Residence** variable, but is retained for a possible de facto vs. de jure sensitivity check.
 - `V501` (marital status, alternate coding) is superseded by `S111A` as the eligibility-filter variable (see Purpose, above), but is retained for cross-checking the currently-married restriction against an independent marital-status item.

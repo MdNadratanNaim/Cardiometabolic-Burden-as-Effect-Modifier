@@ -30,8 +30,7 @@ parallel survey-weighted logistic regression models.
 │   └── BDHS_Review_Resolutions_and_Methods_Outline.md  # External review this pass responds to
 ├── resources/
 │   ├── full_dataset.csv                   # Raw merged sample (all interviewed women)
-│   ├── depression_dataset.csv             # Final analytic sample, depression outcome
-│   ├── anxiety_dataset.csv                # Final analytic sample, anxiety outcome
+│   ├── depression-anxiety-dataset.csv     # Final analytic sample, both outcomes (same women)
 │   └── visuals/                           # DAGs and the STROBE attrition diagram
 ├── renv/                                  # renv's own bookkeeping (activate.R, settings.json)
 ├── renv.lock                               # Pinned R package versions -- the "uv.lock" of R

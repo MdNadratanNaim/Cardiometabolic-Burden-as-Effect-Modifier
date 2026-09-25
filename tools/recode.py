@@ -309,6 +309,14 @@ clean_recode = {
         "name": "GAD-7 anxiety score (categorized)",
         "value": {0: "0-4 (minimal)", 1: "5-9 (mild)", 2: "10-14 (moderate)", 3: "15-21 (severe)"},
     },
+    "Depression Binary": {
+        "name": "Probable depression (PHQ-9 >= 10)",
+        "value": {0: "No", 1: "Yes"},
+    },
+    "Anxiety Binary": {
+        "name": "Probable anxiety (GAD-7 >= 10)",
+        "value": {0: "No", 1: "Yes"},
+    },
     "Cardiometabolic Burden": {
         "name": "Cardiometabolic Burden",
         "value": {0: "None", 1: "One burden", 2: "Two burdens", 3: "Three burdens"}
@@ -354,7 +362,7 @@ clean_recode = {
         "value": {1: "15-24", 2: "25-34", 3: "35-49"},
     },
     "Age at first cohabitation": {
-        "name": "Age in 5-year groups",
+        "name": "Age at first cohabitation, grouped",
         "value": {0: "<15", 1: "15-24", 2: "25-34", 3: "35-49"},
     },
     "Division": {
