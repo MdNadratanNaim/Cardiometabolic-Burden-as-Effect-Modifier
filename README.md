@@ -7,36 +7,32 @@ Bangladesh?
 This repository contains the full, reproducible analysis pipeline for a cross-sectional study
 using the **Bangladesh Demographic and Health Survey (BDHS) 2022**. Wealth is the exposure,
 cardiometabolic burden (a 0–3 count of diabetes, hypertension, and obesity) is the hypothesized
-effect modifier, and depression (PHQ-9) and anxiety (GAD-7) are the outcomes, analyzed as two
-parallel survey-weighted logistic regression models.
+effect modifier, and depression (PHQ-9) and anxiety (GAD-7) are the outcomes. The main models use
+the ordinal severity bands; the binary screens (score >= 10) are also derived and are used in the
+Notebook 4 screening. Everything is written in Python.
 
 ## Repository structure
 
 ```
 ├── notebooks/
-│   ├── .Rprofile                              # Activates renv for R kernel launches (see below)
 │   ├── 1. Dataset Creation.ipynb              # Merge raw BDHS recode files into one dataset
-│   ├── 2. Feature Engineering.ipynb           # Eligibility filter, recoding, final analytic CSVs
-│   ├── 3. Basic Inspection.ipynb              # Read-only checks on the final datasets
-│   ├── 4. Exploratory Data Analysis.ipynb     # Missingness structure, GVIF, descriptive summary
-│   ├── 5. Main Regression Analysis.ipynb      # Python: model-building, sparse-cell diagnostics
-│   └── 5. Main Regression Analysis (R).ipynb  # R: design-based inference (survey::svyglm)
+│   ├── 2. Feature Engineering.ipynb           # Eligibility filter, recoding, final analytic CSV
+│   ├── 3. Basic Inspection.ipynb              # Read-only checks on the final dataset
+│   ├── 4. Exploratory Data Analysis.ipynb     # Missingness, selection, design-based descriptives,
+│   │                                          #   bivariate screening, sparsity, GVIF
+│   ├── 5. Confounder Selection.ipynb          # DAG-based, candidate-by-candidate adjustment sets
+│   └── 6. Main Regression Analysis.ipynb      # Weighted ordinal models M1-M6 (Wealth x Burden)
 ├── tools/
-│   └── recode.py                          # Variable metadata (recode, clean_recode) + helpers
+│   ├── recode.py                              # Variable metadata (recode, clean_recode) + helpers
+│   └── survey.py                              # Design-based estimators (SurveyDesign), see below
 ├── docs/
-│   ├── Dictionary.md                      # Full raw-to-final variable dictionary
-│   ├── to_fix.md                          # Running audit trail of issues found/resolved
-│   ├── analysis-notes.md                  # Resolution log + manuscript Methods-section outline
-│   └── BDHS_Review_Resolutions_and_Methods_Outline.md  # External review this pass responds to
+│   └── Dictionary.md                          # Full raw-to-final variable dictionary
 ├── resources/
-│   ├── full_dataset.csv                   # Raw merged sample (all interviewed women)
-│   ├── depression-anxiety-dataset.csv     # Final analytic sample, both outcomes (same women)
-│   └── visuals/                           # DAGs and the STROBE attrition diagram
-├── renv/                                  # renv's own bookkeeping (activate.R, settings.json)
-├── renv.lock                               # Pinned R package versions -- the "uv.lock" of R
-├── DESCRIPTION                             # Explicit R dependency list -- the "pyproject.toml" of R
-├── .Rprofile                               # Activates renv when R starts at the repo root
-└── pyproject.toml
+│   ├── full_dataset.csv                       # Raw merged sample (all interviewed women)
+│   ├── depression-anxiety-dataset.csv         # Final analytic sample, both outcomes (same women)
+│   └── visuals/                               # DAGs and the STROBE attrition diagram
+├── pyproject.toml
+└── uv.lock
 ```
 
 ## Data source
@@ -55,7 +51,8 @@ administered to only a sub-sample of respondents — see `docs/Dictionary.md` an
 the missingness-structure check confirming this is design-based, not item non-response). This
 yields a **final analytic sample of n = 4,887**, identical for the depression and anxiety models.
 See `resources/visuals/Main/Figure-2 (Biomarker structural attrition flow).svg` for the full
-STROBE-style attrition diagram.
+STROBE-style attrition diagram. Notebook 4 compares the analytic sample with the excluded women
+and checks that the survey weights are adequate for the sub-sampled modules.
 
 ## Reproducing the pipeline
 
@@ -64,110 +61,53 @@ uv sync                 # or: pip install -e .
 jupyter lab notebooks/
 ```
 
-Run the Python notebooks in numeric order (1 → 4), then either `5. Main Regression Analysis.ipynb`
-(Python) or `5. Main Regression Analysis (R).ipynb` (R) — they're independent of each other and
-both read the same final analytic CSVs. Notebooks 1 and 2 write/overwrite `resources/full_dataset.csv`
-and the two final analytic CSVs; Notebooks 3, 4, and both Notebook 5 variants are read-only and can
-be re-run independently once Notebook 2 has produced current output.
+Run the notebooks in numeric order. Notebooks 1 and 2 write/overwrite `resources/full_dataset.csv`
+and the final analytic CSV; the later notebooks read that output and can be re-run independently
+once Notebook 2 has produced current output. Notebook 4 re-derives every analysis variable from the
+raw columns and asserts that it reproduces the analytic file exactly.
 
-### Setting up R (the `renv` equivalent of `uv sync`)
+## Survey-design helpers (`tools/survey.py`)
 
-R dependencies are pinned in `renv.lock`, the same role `uv.lock` plays for Python. From the repo
-root:
+The BDHS is a stratified, two-stage cluster sample, and `statsmodels` cannot express
+stratification. `tools/survey.py` provides `SurveyDesign`, which implements the Taylor-linearised
+variance that `survey::svydesign(nest = TRUE)` and Stata's `svyset` use:
 
-```r
-install.packages("renv")   # one-time, if renv itself isn't installed yet
-renv::restore()             # installs the exact pinned package versions from renv.lock
+```python
+from tools.survey import SurveyDesign
+
+design = SurveyDesign(weights=df["Sampling weight"], psu=df["PSU"], stratum=df["Stratum"])
+design.prop(df["Anxiety Binary"] == 1)            # proportion, SE, logit 95% CI
+design.glm_test(y, X, "binomial")                 # weighted logistic/linear fit + design-based Wald test
+design.glm_test(y, X, "binomial", domain=mask)    # subpopulation, keeping the full design
 ```
 
-Then register the R kernel with Jupyter (also one-time):
-
-```r
-IRkernel::installspec(name = "ir", displayname = "R")
-```
-
-`renv::restore()` reads `renv.lock` and installs into a project-local library at `renv/library/`
-(analogous to `.venv/`) — it does not touch any other R project on the machine. `renv/library/`
-is git-ignored, same as `.venv/`; only `renv.lock`, `renv/activate.R`, and `renv/settings.json`
-are committed. `.Rprofile` (both at the repo root and inside `notebooks/`, since Jupyter launches
-the R kernel with its working directory set to wherever the `.ipynb` lives) auto-activates the
-project library every time R starts in this project — no manual `renv::load()` needed day to day.
-
-To add a new R package: `renv::install("packagename")` then `renv::snapshot()` to update the
-lockfile, exactly like `uv add packagename`.
+It was checked once against R 4.3.3 / `survey` 4.2.1 on this project's data (proportions,
+standard errors, logit CIs, subpopulation estimates and weighted-regression Wald tests agree to
+about 1e-5 relative difference; the weighted rank test agrees with `svyranktest` to about three
+significant figures). R is not a dependency of this repository, and the check is not repeated here.
+The module covers binomial and Gaussian GLMs; it has not been extended or validated for the ordinal
+models in Notebook 6.
 
 ## Key documentation
 
 - `docs/Dictionary.md` — every raw BDHS variable, its final analysis-ready form, and the exact
   derivation logic, cross-referenced against `tools/recode.py`.
-- `docs/to_fix.md` — running audit trail of issues found and resolved across review sessions.
-- `docs/analysis-notes.md` — why the adjustment set and Burden coding look the way they do, a
-  full resolution log for every diagnostic added, and a ready-to-adapt Methods-section outline
-  with the exact numbers to cite.
-- `docs/BDHS_Review_Resolutions_and_Methods_Outline.md` — the external review document that
-  `docs/analysis-notes.md` Section 3's resolution log responds to, point by point.
 - `resources/visuals/Main/Figure-1 (Conceptual DAG).svg` — the simplified exposure/modifier/
   outcome DAG used in the main text.
 - `resources/visuals/Supplementary/Supplementary Figure S1 (Full DAG).tex` — the full theoretical
-  DAG underlying confounder selection for the 11-covariate GVIF-validated adjustment set.
+  DAG underlying confounder selection.
 - `resources/visuals/Supplementary/Supplementary Figure S2 (Half DAG).svg` — inclusion/exclusion
   reasoning for the reproductive-health covariates (mediator/collider/proxy-confounder calls).
 
-## Python + R
-
-This project is polyglot by design: Python (`pandas`, `statsmodels`) handles data creation,
-feature engineering, and exploratory model-building; R (`survey`) handles the final regression
-inference, since `statsmodels` has no equivalent to a stratified-multistage survey design object.
-Both live in `notebooks/` as Jupyter notebooks — the R ones run on the `ir` kernel (`IRkernel`),
-installed alongside the Python kernel so both notebook types open and execute the same way.
-
-**R dependencies** are pinned in `renv.lock` (see "Setting up R" above) — 31 packages total,
-headlined by `survey` (4.2-1) and `IRkernel` (1.3.2) on R 4.3.3. `IRkernel` is tracked as a real
-project dependency, not just a system convenience: `renv` inferred it directly from the R
-notebook's Jupyter kernel metadata, since without it the notebook can't execute at all. (`renv`
-was bootstrapped in this environment by installing R 4.3.3 and the packages above via `apt`, then
-running `renv::hydrate()` to link them into a project-local library and `renv::snapshot()` to
-lock exact versions — an offline-friendly path used only because this sandbox has no CRAN access.
-On a normal machine, `renv::restore()` alone is sufficient; see "Setting up R" above.)
-
-**Why both, rather than migrating fully to R:** point estimates (odds ratios) are identical
-regardless of language — both maximize the same weighted pseudo-likelihood. What differs is the
-variance estimator: `statsmodels`' cluster-robust covariance is explicitly flagged by the library
-itself as *"not fully supported"* when combined with weights, and has no way to express
-stratification at all. R's `svydesign(id=~PSU, strata=~Stratum, weights=~Sampling.weight,
-nest=TRUE)` does both correctly. Cross-checking the two languages against each other on this
-project already caught two real issues once (see `docs/to_fix.md`): an invalid non-nested model
-comparison that `statsmodels` didn't flag but R's `anova.svyglm` refused to run (fixed with a
-correctly-nested comparator, "Model 1c," in both notebooks), and a completely-separated covariate
-category (`Insurance = Yes`, 0 events in both outcomes) that needed a systematic check to surface
-— now dropped from the primary adjustment set (11 covariates, not 12) in both notebooks.
-
 ## Status
 
-Data creation, feature engineering, exploratory analysis, and the main survey-weighted logistic
-regression (wealth × cardiometabolic burden interaction, both Python and R versions) are
-complete, including a full diagnostic pass: goodness-of-fit, linearity of the Burden term,
-events-per-variable disclosure, multiple-testing correction, E-values, an outcome-cutoff
-sensitivity check (PHQ-9 ≥15 vs. the primary ≥10), a sampling-weight range check, and
-influence diagnostics. `Insurance` is out of the primary adjustment set (complete separation);
-`Financial Decision-Making` and `IPV Attitude` are tested together as a 13-covariate sensitivity
-addition rather than included in, or left open in, the primary 11-covariate set — see
-`docs/to_fix.md` for the full resolution log and `docs/methods-outline.md` for the Methods-section
-writeup these decisions feed into.
-
-**Headline finding:** no significant linear Wealth × Burden interaction for either outcome.
-Depression's *collapsed*-Burden interaction (0/1/2+ conditions) is nominally significant
-(R: p = 0.028) but doesn't survive correction for the four sensitivity/primary tests run together
-(≈0.11-0.13 depending on method) — reportable as suggestive, not confirmed. Anxiety shows no
-interaction under any Burden coding or covariate set. See the Interpretation section of either
-Notebook 5 variant for the full reasoning chain.
-
-No blocking open items remain for manuscript-ready numbers from this repository's own analysis.
-One external check is still needed: re-auditing `SB267`'s sentinel-code exclusion against the
-official BDHS 2022 biomarker codebook (a country-specific extended-module variable not in the
-standard cross-country DHS recode manual) — see `docs/to_fix.md`, "Still open."
+Data creation, feature engineering, inspection, exploratory analysis (Notebook 4) and confounder
+selection (Notebook 5) are in place. Notebook 6 fits six weighted ordinal models per outcome
+(no / chosen / all confounder candidates, each without and with the Wealth x Burden interaction).
+Its own "What this notebook does not settle" section lists what remains open: the proportional-odds
+assumption is untested, the Wealth linearity check needs reading before the trend coefficients are
+trusted, and its adjustment set has to be reconciled with Notebook 5's.
 
 ## Requirements
 
-Python ≥ 3.12 (see `pyproject.toml` for pinned dependencies) and R ≥ 4.3 with the `survey`
-package (see "Python + R" above).
+Python >= 3.12 (see `pyproject.toml` for pinned dependencies).
