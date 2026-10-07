@@ -7,9 +7,9 @@ Bangladesh?
 This repository contains the full, reproducible analysis pipeline for a cross-sectional study
 using the **Bangladesh Demographic and Health Survey (BDHS) 2022**. Wealth is the exposure,
 cardiometabolic burden (a 0–3 count of diabetes, hypertension, and obesity) is the hypothesized
-effect modifier, and depression (PHQ-9) and anxiety (GAD-7) are the outcomes. The main models use
-the ordinal severity bands; the binary screens (score >= 10) are also derived and are used in the
-Notebook 4 screening. Everything is written in Python.
+effect modifier, and depression (PHQ-9) and anxiety (GAD-7) are the outcomes. Notebook 6 models both
+versions of each outcome, the ordinal severity bands and the binary screens (score >= 10).
+Everything is written in Python.
 
 ## Repository structure
 
@@ -21,9 +21,11 @@ Notebook 4 screening. Everything is written in Python.
 │   ├── 4. Exploratory Data Analysis.ipynb     # Missingness, selection, design-based descriptives,
 │   │                                          #   bivariate screening, sparsity, GVIF
 │   ├── 5. Confounder Selection.ipynb          # DAG-based, candidate-by-candidate adjustment sets
-│   └── 6. Main Regression Analysis.ipynb      # Weighted ordinal models M1-M6 (Wealth x Burden)
+│   └── 6. Main Regression Analysis.ipynb      # 24 design-based models: all screen-significant
+│                                              #   covariates, every outcome x Burden data type (Wealth x Burden)
 ├── tools/
 │   ├── recode.py                              # Variable metadata (recode, clean_recode) + helpers
+│   ├── regression.py                          # Design-based logistic and proportional-odds models, see below
 │   └── survey.py                              # Design-based estimators (SurveyDesign), see below
 ├── docs/
 │   └── Dictionary.md                          # Full raw-to-final variable dictionary
@@ -85,8 +87,33 @@ It was checked once against R 4.3.3 / `survey` 4.2.1 on this project's data (pro
 standard errors, logit CIs, subpopulation estimates and weighted-regression Wald tests agree to
 about 1e-5 relative difference; the weighted rank test agrees with `svyranktest` to about three
 significant figures). R is not a dependency of this repository, and the check is not repeated here.
-The module covers binomial and Gaussian GLMs; it has not been extended or validated for the ordinal
-models in Notebook 6.
+The module covers binomial and Gaussian GLMs; the regression models of Notebook 6 build on it in
+`tools/regression.py`.
+
+## Regression models (`tools/regression.py`)
+
+A weighted logistic model and a weighted proportional-odds (cumulative-logit) model, both with the
+stratified, PSU-clustered linearised variance of `SurveyDesign`. Single coefficients use a t
+distribution on the design degrees of freedom and joint tests an F(k, ddf) Wald test, as
+`survey::svyglm` does. No likelihood-ratio test, AIC or BIC is offered: with unequal weights the
+pseudo-likelihood has no valid reference distribution.
+
+```python
+from tools.regression import fit_logit, fit_ordinal_logit
+
+fit = fit_ordinal_logit(df["Anxiety"], X, design, list(X.columns))   # y coded 0..J-1; X = slope columns
+fit.table()                                  # OR, 95% CI and design-based p for every slope
+fit.wald(["Wealth × Burden"])                # joint design-based Wald F test
+fit.contrast({"Wealth": 1, "Wealth × Burden": 0.66})   # a linear combination, e.g. a simple slope
+```
+
+`fit_logit` reproduces `SurveyDesign.glm_test` to about 1e-13, and `fit_ordinal_logit` reproduces the
+coefficients of `statsmodels`' `OrderedModel` (same weights) to about 1e-8; Notebook 6 repeats both
+checks on every run. All 24 models of Notebook 6 were also refitted once in R 4.3.3 / `survey` 4.2.1
+(`svyolr` for the ordinal models, `svyglm` with a quasibinomial family for the logistic ones): the
+largest coefficient difference was 9e-5 and the largest relative difference in a standard error 2e-5
+for the ordinal models, and 4e-12 and 1e-6 for the logistic ones. R is not a dependency of this
+repository, and that check is not repeated here.
 
 ## Key documentation
 
@@ -102,11 +129,12 @@ models in Notebook 6.
 ## Status
 
 Data creation, feature engineering, inspection, exploratory analysis (Notebook 4) and confounder
-selection (Notebook 5) are in place. Notebook 6 fits six weighted ordinal models per outcome
-(no / chosen / all confounder candidates, each without and with the Wealth x Burden interaction).
-Its own "What this notebook does not settle" section lists what remains open: the proportional-odds
-assumption is untested, the Wealth linearity check needs reading before the trend coefficients are
-trusted, and its adjustment set has to be reconciled with Notebook 5's.
+selection (Notebook 5) are in place. Notebook 6 fits 24 design-based models: four outcome versions
+x three Burden data types (0-3 count, 0-2 merged, binary) x without and with the Wealth x Burden
+interaction. Every model for an outcome carries all variables that were significant in Notebook 4's
+bivariate screen, so only the data type of a variable changes between models. Its own "What this
+notebook does not settle" section lists what remains open: the covariates come from the screen rather
+than from Notebook 5's DAG, and the proportional-odds assumption is untested.
 
 ## Requirements
 
