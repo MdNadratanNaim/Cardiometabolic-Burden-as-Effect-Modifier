@@ -21,8 +21,8 @@ Everything is written in Python.
 │   ├── 4. Exploratory Data Analysis.ipynb     # Missingness, selection, design-based descriptives,
 │   │                                          #   bivariate screening, sparsity, GVIF
 │   ├── 5. Confounder Selection.ipynb          # DAG-based, candidate-by-candidate adjustment sets
-│   └── 6. Main Regression Analysis.ipynb      # 24 design-based models: all screen-significant
-│                                              #   covariates, every outcome x Burden data type (Wealth x Burden)
+│   └── 6. Main Regression Analysis.ipynb      # 120 design-based models: 4 outcomes x 5 Burden
+│                                              #   specifications x 3 covariate sets x without/with Wealth x Burden
 ├── tools/
 │   ├── recode.py                              # Variable metadata (recode, clean_recode) + helpers
 │   ├── regression.py                          # Design-based logistic and proportional-odds models, see below
@@ -32,6 +32,8 @@ Everything is written in Python.
 ├── resources/
 │   ├── full_dataset.csv                       # Raw merged sample (all interviewed women)
 │   ├── depression-anxiety-dataset.csv         # Final analytic sample, both outcomes (same women)
+│   ├── regression-coefficients.csv            # Every term of every Notebook 6 model (written when SAVE = True)
+│   ├── regression-model-summary.csv           # One row per model: p of Burden, Wealth, interaction (same)
 │   └── visuals/                               # DAGs and the STROBE attrition diagram
 ├── pyproject.toml
 └── uv.lock
@@ -109,8 +111,11 @@ fit.contrast({"Wealth": 1, "Wealth × Burden": 0.66})   # a linear combination, 
 
 `fit_logit` reproduces `SurveyDesign.glm_test` to about 1e-13, and `fit_ordinal_logit` reproduces the
 coefficients of `statsmodels`' `OrderedModel` (same weights) to about 1e-8; Notebook 6 repeats both
-checks on every run. All 24 models of Notebook 6 were also refitted once in R 4.3.3 / `survey` 4.2.1
-(`svyolr` for the ordinal models, `svyglm` with a quasibinomial family for the logistic ones): the
+checks on every run and, for each of its proportional-odds models, also confirms that `statsmodels`'
+weighted log-likelihood equals the engine's and has zero gradient at its solution. Twenty-four models
+(the four outcome versions x a 0-3, 0-2 or binary Burden x without and with the Wealth x Burden term,
+with the Notebook 4 screen covariates; these are in Notebook 6) were also refitted once in R 4.3.3 /
+`survey` 4.2.1 (`svyolr` for the ordinal models, `svyglm` with a quasibinomial family for the logistic ones): the
 largest coefficient difference was 9e-5 and the largest relative difference in a standard error 2e-5
 for the ordinal models, and 4e-12 and 1e-6 for the logistic ones. R is not a dependency of this
 repository, and that check is not repeated here.
@@ -129,12 +134,14 @@ repository, and that check is not repeated here.
 ## Status
 
 Data creation, feature engineering, inspection, exploratory analysis (Notebook 4) and confounder
-selection (Notebook 5) are in place. Notebook 6 fits 24 design-based models: four outcome versions
-x three Burden data types (0-3 count, 0-2 merged, binary) x without and with the Wealth x Burden
-interaction. Every model for an outcome carries all variables that were significant in Notebook 4's
-bivariate screen, so only the data type of a variable changes between models. Its own "What this
-notebook does not settle" section lists what remains open: the covariates come from the screen rather
-than from Notebook 5's DAG, and the proportional-odds assumption is untested.
+selection (Notebook 5) are in place. Notebook 6 fits 120 design-based models: four outcome versions
+x five Burden specifications (0-3 count, 0-2 merged as a count, 0-2 merged as categories, binary, and
+diabetes, hypertension and obesity entered separately) x three covariate sets (the Notebook 4
+screen, Notebook 5's confounders, all available variables) x without and with the Wealth x Burden
+interaction. It prints the full result of every model and one list of all 120 models with the p-value of
+Burden, Wealth and the interaction. Its own "What this notebook does not settle" section lists what
+remains open: two of the three covariate sets adjust for variables Notebook 5 treats as mediators, a
+few thin categories needed decisions, and the proportional-odds assumption is checked only descriptively.
 
 ## Requirements
 

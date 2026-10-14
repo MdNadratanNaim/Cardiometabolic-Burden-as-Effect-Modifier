@@ -18,13 +18,15 @@ have no valid reference distribution, so use ``DesignFit.wald`` instead.
 
 Validation: ``fit_logit`` reproduces ``SurveyDesign.glm_test`` (coefficient, standard error, p) to about
 1e-13, and ``fit_ordinal_logit`` reproduces the coefficients of statsmodels' ``OrderedModel`` (same
-weights, Newton-polished) to about 1e-8; Notebook 6 repeats both checks every time it runs.  Against R
-4.3.3 / ``survey`` 4.2.1 (checked once; R is not a dependency of this repository), all 24 models of
-Notebook 6 were refitted with ``svyolr`` (12 ordinal) and ``svyglm`` with a quasibinomial family (12
-logistic): the largest coefficient difference was 9e-5 and the largest relative difference in a
-standard error 2e-5 for the ordinal models (consistent with ``svyolr``'s own optimiser tolerance: the
-Python solutions satisfy the weighted score equations to about 1e-13), and 4e-12 and 1e-6 for the
-logistic ones.
+weights, Newton-polished) to about 1e-8; Notebook 6 repeats both checks every time it runs, and also
+confirms for each of its proportional-odds models that statsmodels' weighted log-likelihood equals this
+one and has zero gradient at the solution.  Against R 4.3.3 / ``survey`` 4.2.1 (checked once; R is not a
+dependency of this repository), 24 models (the four outcome versions x a 0-3, 0-2 or binary Burden x
+without and with the Wealth x Burden term, with the Notebook 4 screen covariates) were refitted with
+``svyolr`` (12 ordinal) and ``svyglm`` with a quasibinomial family (12 logistic): the largest coefficient
+difference was 9e-5 and the largest relative difference in a standard error 2e-5 for the ordinal models
+(consistent with ``svyolr``'s own optimiser tolerance: the Python solutions satisfy the weighted score
+equations to about 1e-13), and 4e-12 and 1e-6 for the logistic ones.
 """
 from __future__ import annotations
 
